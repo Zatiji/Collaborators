@@ -42,3 +42,9 @@ yarn-error.*
 
 # env variables
 .env
+
+# visual studio code
+.vscode/
+
+# personal claude code overrides
+.claude/settings.local.json
