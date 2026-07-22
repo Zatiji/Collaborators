@@ -7,7 +7,7 @@ module.exports = ({ config }) => ({
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'light',
-  plugins: ['expo-router'],
+  plugins: ['expo-router', 'expo-sqlite'],
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.davidmosquera.Collaborators',
