@@ -48,3 +48,6 @@ yarn-error.*
 
 # personal claude code overrides
 .claude/settings.local.json
+
+# superpower claude skill
+superpowers/

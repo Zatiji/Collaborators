@@ -4,7 +4,9 @@
       "Bash(cat)",
       "Bash(node .tmp-verify.mjs)",
       "Bash(rm .tmp-verify.mjs)",
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(xargs -I{} echo {})",
+      "Bash(:)"
     ]
   },
   "enabledPlugins": {
