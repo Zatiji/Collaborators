@@ -47,7 +47,7 @@ yarn-error.*
 .vscode/
 
 # personal claude code overrides
-.claude/settings.local.json
+.claude/
 
 # superpower claude skill
 superpowers/
