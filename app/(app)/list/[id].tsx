@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import {
   FlatList,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -10,9 +11,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useEntries } from '../../src/hooks/useEntries';
-import { EntryRow } from '../../src/components/EntryRow';
-import { getList } from '../../src/db/queries';
+import { useEntries } from '../../../src/hooks/useEntries';
+import { EntryRow } from '../../../src/components/EntryRow';
+import { getList } from '../../../src/db/queries';
 
 export default function ListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,19 +40,22 @@ export default function ListDetailScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Stack.Screen options={{ title: listName || 'List' }} />
-      <FlatList
-        data={entries}
-        keyExtractor={(entry) => entry.id}
-        renderItem={({ item: entry }) => (
-          <EntryRow
-            entry={entry}
-            onToggle={() => toggleEntry(entry.id, !entry.completed)}
-            onDelete={() => removeEntry(entry.id)}
-            onEdit={(newText) => editEntry(entry.id, newText)}
-          />
-        )}
-        ListEmptyComponent={<Text style={styles.empty}>No entries yet.</Text>}
-      />
+      <Pressable style={styles.flex} onPress={Keyboard.dismiss}>
+        <FlatList
+          data={entries}
+          keyExtractor={(entry) => entry.id}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item: entry }) => (
+            <EntryRow
+              entry={entry}
+              onToggle={() => toggleEntry(entry.id, !entry.completed)}
+              onDelete={() => removeEntry(entry.id)}
+              onEdit={(newText) => editEntry(entry.id, newText)}
+            />
+          )}
+          ListEmptyComponent={<Text style={styles.empty}>No entries yet.</Text>}
+        />
+      </Pressable>
       <View style={styles.addRow}>
         <TextInput
           style={styles.input}
@@ -70,6 +74,7 @@ export default function ListDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  flex: { flex: 1 },
   empty: { textAlign: 'center', marginTop: 24, color: '#888' },
   addRow: {
     flexDirection: 'row',

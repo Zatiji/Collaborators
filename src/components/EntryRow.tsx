@@ -16,6 +16,7 @@ export function EntryRow({ entry, onToggle, onDelete, onEdit }: Props) {
 	function commitEdit() {
 		setEditing(false);
 		const trimmed = draft.trim();
+
 		if (trimmed.length > 0 && trimmed !== entry.text) {
 			onEdit(trimmed);
 		} else {
