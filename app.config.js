@@ -1,17 +1,20 @@
-import { ConfigContext, ExpoConfig } from 'expo/config';
-
-export default ({ config }: ConfigContext): ExpoConfig => ({
+module.exports = ({ config }) => ({
   ...config,
   name: 'Collaborators',
   slug: 'Collaborators',
   version: '1.0.0',
+  scheme: 'collaborators',
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'light',
+  plugins: ['expo-router', 'expo-sqlite'],
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.davidmosquera.Collaborators',
     appleTeamId: '3Y4H9TV2ZH',
+    infoPlist: {
+      ITSAppUsesNonExemptEncryption: false,
+    },
   },
   android: {
     adaptiveIcon: {
