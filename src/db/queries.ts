@@ -1,5 +1,5 @@
 import { getDb } from "./schema";
-import type { List, Entry } from "../types/domain";
+import type { List, Entry } from "../types/todo";
 
 function generateId(): string {
 	const cryptoObj = globalThis.crypto as Crypto | undefined;
