@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { Entry } from "../types/todo";
+import { FloatingCard } from "./FloatingCard";
+import { SwipeToDelete } from "./SwipeToDelete";
+import { useTheme } from "../theme/ThemeContext";
+import { CheckboxIcon } from "./icons";
 
 type Props = {
 	entry: Entry;
@@ -10,6 +14,7 @@ type Props = {
 };
 
 export function EntryRow({ entry, onToggle, onDelete, onEdit }: Props) {
+	const { palette } = useTheme();
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(entry.text);
 
@@ -25,46 +30,50 @@ export function EntryRow({ entry, onToggle, onDelete, onEdit }: Props) {
 	}
 
 	return (
-		<View style={styles.row}>
-			<Pressable onPress={onToggle} hitSlop={8}>
-				<Text style={styles.checkbox}>{entry.completed ? "[x]" : "[ ]"}</Text>
-			</Pressable>
-			{editing ? (
-				<TextInput
-					style={[styles.text, styles.input]}
-					value={draft}
-					onChangeText={setDraft}
-					onBlur={commitEdit}
-					onSubmitEditing={commitEdit}
-					autoFocus
-				/>
-			) : (
-				<Pressable style={styles.textWrap} onPress={() => setEditing(true)}>
-					<Text style={[styles.text, entry.completed && styles.completed]}>
-						{entry.text}
-					</Text>
-				</Pressable>
-			)}
-			<Pressable onPress={onDelete} hitSlop={8}>
-				<Text style={styles.delete}>Delete</Text>
-			</Pressable>
+		<View style={styles.outer}>
+			<SwipeToDelete onConfirmDelete={onDelete}>
+				<FloatingCard style={styles.card}>
+					<Pressable onPress={onToggle} hitSlop={8}>
+						<CheckboxIcon size={26} color={palette.stormyTeal} checked={entry.completed} />
+					</Pressable>
+					{editing ? (
+						<TextInput
+							style={[styles.text, styles.input, { color: palette.text, borderColor: palette.line }]}
+							value={draft}
+							onChangeText={setDraft}
+							onBlur={commitEdit}
+							onSubmitEditing={commitEdit}
+							autoFocus
+						/>
+					) : (
+						<Pressable style={styles.textWrap} onPress={() => setEditing(true)}>
+							<Text
+								style={[
+									styles.text,
+									{ color: entry.completed ? palette.textMuted : palette.text },
+									entry.completed && styles.completed,
+								]}
+							>
+								{entry.text}
+							</Text>
+						</Pressable>
+					)}
+				</FloatingCard>
+			</SwipeToDelete>
 		</View>
 	);
 }
 
 const styles = StyleSheet.create({
-	row: {
+	outer: { marginBottom: 13, paddingHorizontal: 16 },
+	card: {
 		flexDirection: "row",
 		alignItems: "center",
-		paddingVertical: 10,
+		paddingVertical: 14,
 		paddingHorizontal: 16,
-		borderBottomWidth: StyleSheet.hairlineWidth,
-		borderBottomColor: "#ccc",
 	},
-	checkbox: { fontSize: 16, marginRight: 10, fontFamily: "Courier" },
-	textWrap: { flex: 1 },
-	text: { fontSize: 16 },
-	input: { padding: 0 },
-	completed: { textDecorationLine: "line-through", color: "#888" },
-	delete: { color: "#d00", fontSize: 14, marginLeft: 10 },
+	textWrap: { flex: 1, marginLeft: 12 },
+	text: { fontSize: 16, fontFamily: "Arial" },
+	input: { padding: 0, marginLeft: 12, flex: 1, borderBottomWidth: 1 },
+	completed: { textDecorationLine: "line-through" },
 });

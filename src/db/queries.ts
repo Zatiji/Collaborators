@@ -13,6 +13,7 @@ type ListRow = {
 	id: string;
 	name: string;
 	created_at: number;
+	updated_at: number;
 };
 
 type EntryRow = {
@@ -21,10 +22,11 @@ type EntryRow = {
 	text: string;
 	completed: number;
 	created_at: number;
+	updated_at: number;
 };
 
 function rowToList(row: ListRow): List {
-	return { id: row.id, name: row.name, createdAt: row.created_at };
+	return { id: row.id, name: row.name, createdAt: row.created_at, updatedAt: row.updated_at };
 }
 
 function rowToEntry(row: EntryRow): Entry {
@@ -34,13 +36,14 @@ function rowToEntry(row: EntryRow): Entry {
 		text: row.text,
 		completed: row.completed === 1,
 		createdAt: row.created_at,
+		updatedAt: row.updated_at,
 	};
 }
 
 export async function getLists(): Promise<List[]> {
 	const db = await getDb();
 	const rows = await db.getAllAsync<ListRow>(
-		"SELECT * FROM lists ORDER BY created_at DESC;",
+		"SELECT * FROM lists ORDER BY updated_at DESC;",
 	);
 
 	return rows.map(rowToList);
@@ -59,15 +62,16 @@ export async function getList(id: string): Promise<List | null> {
 export async function createList(name: string): Promise<List> {
 	const db = await getDb();
 	const id = generateId();
-	const createdAt = Date.now();
+	const now = Date.now();
 	await db.runAsync(
-		"INSERT INTO lists (id, name, created_at) VALUES (?, ?, ?);",
+		"INSERT INTO lists (id, name, created_at, updated_at) VALUES (?, ?, ?, ?);",
 		id,
 		name,
-		createdAt,
+		now,
+		now,
 	);
 
-	return { id, name, createdAt };
+	return { id, name, createdAt: now, updatedAt: now };
 }
 
 export async function deleteList(id: string): Promise<void> {
@@ -79,7 +83,7 @@ export async function getEntries(listId: string): Promise<Entry[]> {
 	const db = await getDb();
 
 	const rows = await db.getAllAsync<EntryRow>(
-		"SELECT * FROM entries WHERE list_id = ? ORDER BY created_at ASC;",
+		"SELECT * FROM entries WHERE list_id = ? ORDER BY updated_at DESC;",
 		listId,
 	);
 
@@ -92,22 +96,28 @@ export async function createEntry(
 ): Promise<Entry> {
 	const db = await getDb();
 	const id = generateId();
-	const createdAt = Date.now();
+	const now = Date.now();
 
 	await db.runAsync(
-		"INSERT INTO entries (id, list_id, text, completed, created_at) VALUES (?, ?, ?, 0, ?);",
+		"INSERT INTO entries (id, list_id, text, completed, created_at, updated_at) VALUES (?, ?, ?, 0, ?, ?);",
 		id,
 		listId,
 		text,
-		createdAt,
+		now,
+		now,
 	);
 
-	return { id, listId, text, completed: false, createdAt };
+	return { id, listId, text, completed: false, createdAt: now, updatedAt: now };
 }
 
 export async function updateEntryText(id: string, text: string): Promise<void> {
 	const db = await getDb();
-	await db.runAsync("UPDATE entries SET text = ? WHERE id = ?;", text, id);
+	await db.runAsync(
+		"UPDATE entries SET text = ?, updated_at = ? WHERE id = ?;",
+		text,
+		Date.now(),
+		id,
+	);
 }
 
 export async function toggleEntryComplete(
@@ -116,8 +126,9 @@ export async function toggleEntryComplete(
 ): Promise<void> {
 	const db = await getDb();
 	await db.runAsync(
-		"UPDATE entries SET completed = ? WHERE id = ?;",
+		"UPDATE entries SET completed = ?, updated_at = ? WHERE id = ?;",
 		completed ? 1 : 0,
+		Date.now(),
 		id,
 	);
 }

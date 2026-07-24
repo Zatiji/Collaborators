@@ -2,6 +2,7 @@ export interface List {
 	id: string;
 	name: string;
 	createdAt: number;
+	updatedAt: number;
 }
 
 export interface Entry {
@@ -10,4 +11,5 @@ export interface Entry {
 	text: string;
 	completed: boolean;
 	createdAt: number;
+	updatedAt: number;
 }
