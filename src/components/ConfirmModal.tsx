@@ -16,7 +16,7 @@ import Animated, {
 import { useTheme } from "../theme/ThemeContext";
 
 type ConfirmModalContextValue = {
-	confirm: (message: string, onConfirm: () => void) => void;
+	confirm: (message: string, onConfirm: () => void, confirmLabel?: string) => void;
 };
 
 const ConfirmModalContext = createContext<ConfirmModalContextValue>({
@@ -26,13 +26,15 @@ const ConfirmModalContext = createContext<ConfirmModalContextValue>({
 export function ConfirmModalProvider({ children }: PropsWithChildren) {
 	const { palette } = useTheme();
 	const [message, setMessage] = useState<string | null>(null);
+	const [confirmLabel, setConfirmLabel] = useState("Delete");
 	const onConfirmRef = useRef<() => void>(() => {});
 	const progress = useSharedValue(0);
 
 	const confirm = useCallback(
-		(next: string, onConfirm: () => void) => {
+		(next: string, onConfirm: () => void, label = "Delete") => {
 			onConfirmRef.current = onConfirm;
 			setMessage(next);
+			setConfirmLabel(label);
 			progress.value = withTiming(1, { duration: 180 });
 		},
 		[progress]
@@ -84,7 +86,9 @@ export function ConfirmModalProvider({ children }: PropsWithChildren) {
 									{ borderColor: palette.line, backgroundColor: palette.rosewood },
 								]}
 							>
-								<Text style={[styles.buttonText, { color: palette.background }]}>Delete</Text>
+								<Text style={[styles.buttonText, { color: palette.background }]}>
+									{confirmLabel}
+								</Text>
 							</Pressable>
 						</View>
 					</Animated.View>
