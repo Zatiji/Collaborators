@@ -83,7 +83,7 @@ export async function getEntries(listId: string): Promise<Entry[]> {
 	const db = await getDb();
 
 	const rows = await db.getAllAsync<EntryRow>(
-		"SELECT * FROM entries WHERE list_id = ? ORDER BY updated_at DESC;",
+		"SELECT * FROM entries WHERE list_id = ? ORDER BY created_at ASC;",
 		listId,
 	);
 

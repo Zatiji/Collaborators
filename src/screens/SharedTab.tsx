@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { Stack } from "expo-router";
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import { getPermission, mockSharedWithMeLists } from "../../src/mock/sharing";
-import { ListRow } from "../../src/components/ListRow";
-import { BottomNav } from "../../src/components/BottomNav";
-import { ShareModal } from "../../src/components/ShareModal";
-import { useWarningPopup } from "../../src/components/WarningPopup";
-import { useTheme } from "../../src/theme/ThemeContext";
+import { getPermission, mockSharedWithMeLists } from "../mock/sharing";
+import { ListRow } from "../components/ListRow";
+import { ShareModal } from "../components/ShareModal";
+import { useWarningPopup } from "../components/WarningPopup";
+import { useTheme } from "../theme/ThemeContext";
 
-export default function SharedScreen() {
+export function SharedTab() {
 	const { palette } = useTheme();
 	const { show } = useWarningPopup();
 	const [shareListId, setShareListId] = useState<string | null>(null);
@@ -16,14 +14,6 @@ export default function SharedScreen() {
 
 	return (
 		<View style={[styles.container, { backgroundColor: palette.background }]}>
-			<Stack.Screen
-				options={{
-					headerShown: true,
-					headerTitle: "Shared with you",
-					headerStyle: { backgroundColor: palette.background },
-					headerShadowVisible: false,
-				}}
-			/>
 			<FlatList
 				data={sorted}
 				keyExtractor={(list) => list.id}
@@ -48,7 +38,6 @@ export default function SharedScreen() {
 					</Text>
 				}
 			/>
-			<BottomNav />
 			<ShareModal
 				visible={shareListId !== null}
 				listId={shareListId}

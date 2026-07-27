@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useRef, useState } from "react";
+import { type PropsWithChildren, useRef } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 import { useTheme } from "../theme/ThemeContext";
@@ -10,34 +10,26 @@ type Props = PropsWithChildren<{
 
 export function SwipeToDelete({ children, onConfirmDelete }: Props) {
 	const { palette } = useTheme();
-	const [armed, setArmed] = useState(false);
 	const swipeableRef = useRef<Swipeable>(null);
 
 	function handlePress() {
-		if (armed) {
-			swipeableRef.current?.close();
-			setArmed(false);
-			onConfirmDelete();
-			return;
-		}
-		setArmed(true);
+		swipeableRef.current?.close();
+		onConfirmDelete();
 	}
 
 	return (
 		<Swipeable
 			ref={swipeableRef}
+			containerStyle={styles.container}
 			renderRightActions={() => (
 				<Pressable
 					onPress={handlePress}
 					style={[styles.action, { backgroundColor: palette.rosewood }]}
 				>
 					<TrashIcon size={20} color={palette.background} />
-					<Text style={[styles.label, { color: palette.background }]}>
-						{armed ? "Confirm?" : "Delete"}
-					</Text>
+					<Text style={[styles.label, { color: palette.background }]}>Delete</Text>
 				</Pressable>
 			)}
-			onSwipeableWillClose={() => setArmed(false)}
 		>
 			{children}
 		</Swipeable>
@@ -45,6 +37,7 @@ export function SwipeToDelete({ children, onConfirmDelete }: Props) {
 }
 
 const styles = StyleSheet.create({
+	container: { overflow: "visible" },
 	action: {
 		width: 96,
 		justifyContent: "center",

@@ -8,20 +8,19 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useEntries } from '../../../src/hooks/useEntries';
 import { EntryRow } from '../../../src/components/EntryRow';
+import { AddItemButton } from '../../../src/components/AddItemButton';
 import { getList } from '../../../src/db/queries';
 import { useTheme } from '../../../src/theme/ThemeContext';
-import { BackArrowIcon, PlusIcon } from '../../../src/components/icons';
+import { BackArrowIcon } from '../../../src/components/icons';
 
 export default function ListDetailScreen() {
   const { palette } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { entries, addEntry, removeEntry, toggleEntry, editEntry } = useEntries(id);
-  const [text, setText] = useState('');
   const [listName, setListName] = useState('');
 
   useFocusEffect(
@@ -29,13 +28,6 @@ export default function ListDetailScreen() {
       getList(id).then((list) => setListName(list?.name ?? ''));
     }, [id])
   );
-
-  async function handleAdd() {
-    const trimmed = text.trim();
-    if (trimmed.length === 0) return;
-    setText('');
-    await addEntry(trimmed);
-  }
 
   return (
     <KeyboardAvoidingView
@@ -47,6 +39,7 @@ export default function ListDetailScreen() {
           headerShown: true,
           headerTitle: listName || 'List',
           headerStyle: { backgroundColor: palette.background },
+          headerTintColor: palette.text,
           headerShadowVisible: false,
           headerLeft: () => (
             <Pressable onPress={() => router.back()} hitSlop={8} style={styles.backButton}>
@@ -63,23 +56,7 @@ export default function ListDetailScreen() {
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
             <View style={styles.addRow}>
-              <TextInput
-                style={[styles.input, { borderColor: palette.line, color: palette.text }]}
-                value={text}
-                onChangeText={setText}
-                placeholder="New entry"
-                placeholderTextColor={palette.textMuted}
-                onSubmitEditing={handleAdd}
-              />
-              <Pressable
-                onPress={handleAdd}
-                style={[styles.addButton, { borderColor: palette.line }]}
-              >
-                <View style={styles.addButtonFaded}>
-                  <Text style={[styles.addButtonLabel, { color: palette.text }]}>add entry</Text>
-                </View>
-                <PlusIcon size={20} color={palette.text} />
-              </Pressable>
+              <AddItemButton placeholder="Add entry" onSubmit={addEntry} />
             </View>
           }
           renderItem={({ item: entry }) => (
@@ -106,23 +83,4 @@ const styles = StyleSheet.create({
   listContent: { paddingBottom: 40 },
   empty: { textAlign: 'center', marginTop: 24, fontFamily: 'Arial' },
   addRow: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  input: {
-    borderWidth: 2,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontFamily: 'Arial',
-    marginBottom: 10,
-  },
-  addButton: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderRadius: 16,
-    paddingVertical: 16,
-  },
-  addButtonFaded: { flexDirection: 'row', opacity: 0.5, marginRight: 8 },
-  addButtonLabel: { fontFamily: 'Arial', fontSize: 15, fontWeight: '600' },
 });

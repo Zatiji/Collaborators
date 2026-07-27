@@ -1,136 +1,49 @@
-import { useState } from "react";
-import { router, Stack } from "expo-router";
-import {
-	FlatList,
-	Keyboard,
-	KeyboardAvoidingView,
-	Platform,
-	Pressable,
-	StyleSheet,
-	Text,
-	TextInput,
-	View,
-} from "react-native";
-import { useLists } from "../../src/hooks/useLists";
+import { Stack } from "expo-router";
+import { StyleSheet, View } from "react-native";
 import { useAuth } from "../../src/contexts/AuthContext";
-import { ListRow } from "../../src/components/ListRow";
-import { BottomNav } from "../../src/components/BottomNav";
-import { ShareModal } from "../../src/components/ShareModal";
 import { useTheme } from "../../src/theme/ThemeContext";
-import { PlusIcon } from "../../src/components/icons";
-import { supabase } from "../../src/lib/supabase";
+import { useSwipeTabs } from "../../src/hooks/useSwipeTabs";
+import { TabPager } from "../../src/components/TabPager";
+import { BottomNav } from "../../src/components/BottomNav";
+import { SharedTab } from "../../src/screens/SharedTab";
+import { HomeTab } from "../../src/screens/HomeTab";
+import { ProfileTab } from "../../src/screens/ProfileTab";
 
-export default function ListsScreen() {
+const TITLES = ["Shared with you", "", ""];
+
+export default function TabsScreen() {
 	const { palette } = useTheme();
 	const { session } = useAuth();
-	const { lists, createList, deleteList } = useLists();
-	const [name, setName] = useState("");
-	const [shareListId, setShareListId] = useState<string | null>(null);
+	const { progress, index, contentWidth, navWidth, contentGesture, navGesture, goTo } =
+		useSwipeTabs(3, 1);
 
 	const username =
 		(session?.user.user_metadata as { username?: string } | undefined)?.username ?? "";
-
-	async function handleCreate() {
-		const trimmed = name.trim();
-		if (trimmed.length === 0) return;
-		setName("");
-		await createList(trimmed);
-	}
+	const title = TITLES[index] || username;
 
 	return (
-		<KeyboardAvoidingView
-			style={[styles.container, { backgroundColor: palette.background }]}
-			behavior={Platform.OS === "ios" ? "padding" : undefined}
-		>
+		<View style={[styles.container, { backgroundColor: palette.background }]}>
 			<Stack.Screen
 				options={{
 					headerShown: true,
-					headerTitle: username,
+					headerTitle: title,
 					headerStyle: { backgroundColor: palette.background },
+					headerTintColor: palette.text,
 					headerShadowVisible: false,
-					headerRight: () => (
-						<Pressable onPress={() => supabase.auth.signOut()} hitSlop={8}>
-							<Text style={[styles.signOut, { color: palette.rosewood }]}>Sign Out</Text>
-						</Pressable>
-					),
+					headerBackVisible: false,
 				}}
 			/>
-			<Pressable style={styles.flex} onPress={Keyboard.dismiss}>
-				<FlatList
-					data={lists}
-					keyExtractor={(list) => list.id}
-					keyboardShouldPersistTaps="handled"
-					contentContainerStyle={styles.listContent}
-					ListHeaderComponent={
-						<View style={styles.addRow}>
-							<TextInput
-								style={[styles.input, { borderColor: palette.line, color: palette.text }]}
-								value={name}
-								onChangeText={setName}
-								placeholder="New list name"
-								placeholderTextColor={palette.textMuted}
-								onSubmitEditing={handleCreate}
-							/>
-							<Pressable
-								onPress={handleCreate}
-								style={[styles.addButton, { borderColor: palette.line }]}
-							>
-								<View style={styles.addButtonFaded}>
-									<Text style={[styles.addButtonLabel, { color: palette.text }]}>
-										Create a new list
-									</Text>
-								</View>
-								<PlusIcon size={20} color={palette.text} />
-							</Pressable>
-						</View>
-					}
-					renderItem={({ item }) => (
-						<ListRow
-							list={item}
-							onPress={() => router.push(`/list/${item.id}`)}
-							onShare={() => setShareListId(item.id)}
-							onDelete={() => deleteList(item.id)}
-						/>
-					)}
-					ListEmptyComponent={
-						<Text style={[styles.empty, { color: palette.textMuted }]}>No lists yet.</Text>
-					}
-				/>
-			</Pressable>
-			<BottomNav />
-			<ShareModal
-				visible={shareListId !== null}
-				listId={shareListId}
-				onClose={() => setShareListId(null)}
+			<TabPager
+				progress={progress}
+				contentWidth={contentWidth}
+				gesture={contentGesture}
+				pages={[<SharedTab key="shared" />, <HomeTab key="home" />, <ProfileTab key="profile" />]}
 			/>
-		</KeyboardAvoidingView>
+			<BottomNav progress={progress} navWidth={navWidth} gesture={navGesture} onSelect={goTo} />
+		</View>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: { flex: 1 },
-	flex: { flex: 1 },
-	listContent: { paddingBottom: 120 },
-	empty: { textAlign: "center", marginTop: 24, fontFamily: "Arial" },
-	addRow: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-	input: {
-		borderWidth: 2,
-		borderRadius: 12,
-		paddingHorizontal: 12,
-		paddingVertical: 10,
-		fontFamily: "Arial",
-		marginBottom: 10,
-	},
-	addButton: {
-		flexDirection: "row",
-		justifyContent: "center",
-		alignItems: "center",
-		borderWidth: 2,
-		borderStyle: "dashed",
-		borderRadius: 16,
-		paddingVertical: 16,
-	},
-	addButtonFaded: { flexDirection: "row", opacity: 0.5, marginRight: 8 },
-	addButtonLabel: { fontFamily: "Arial", fontSize: 15, fontWeight: "600", marginRight: 8 },
-	signOut: { fontSize: 15, marginRight: 4, fontFamily: "Arial" },
 });

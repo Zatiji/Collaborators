@@ -23,13 +23,13 @@ export const lightPalette: Palette = {
 };
 
 export const darkPalette: Palette = {
-	background: "#211E17",
-	surface: "#332F24",
+	background: "#3A362E",
+	surface: "#4A4539",
 	line: "#000000",
-	text: "#FFFADE",
-	textMuted: "#FFFADE80",
+	text: "#D8D6D2",
+	textMuted: "#D8D6D280",
 	lightBlue: "#A6CFD5",
-	stormyTeal: "#086375",
+	stormyTeal: "#3FB6C4",
 	rosewood: "#CA054D",
 	shadow: "#000000",
 };

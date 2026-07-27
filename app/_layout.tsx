@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../src/contexts/AuthContext";
 import { ThemeProvider } from "../src/theme/ThemeContext";
 import { WarningPopupProvider } from "../src/components/WarningPopup";
+import { ConfirmModalProvider } from "../src/components/ConfirmModal";
 
 function RootNavigator() {
 	const { session, isLoading } = useAuth();
@@ -29,9 +30,11 @@ export default function RootLayout() {
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<ThemeProvider>
 				<WarningPopupProvider>
-					<AuthProvider>
-						<RootNavigator />
-					</AuthProvider>
+					<ConfirmModalProvider>
+						<AuthProvider>
+							<RootNavigator />
+						</AuthProvider>
+					</ConfirmModalProvider>
 				</WarningPopupProvider>
 			</ThemeProvider>
 		</GestureHandlerRootView>

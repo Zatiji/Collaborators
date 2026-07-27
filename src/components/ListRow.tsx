@@ -4,6 +4,7 @@ import { getPermission } from "../mock/sharing";
 import { FloatingCard } from "./FloatingCard";
 import { SwipeToDelete } from "./SwipeToDelete";
 import { useWarningPopup } from "./WarningPopup";
+import { useConfirmModal } from "./ConfirmModal";
 import { useTheme } from "../theme/ThemeContext";
 import { ShareIcon } from "./icons";
 
@@ -17,19 +18,20 @@ type Props = {
 export function ListRow({ list, onPress, onShare, onDelete }: Props) {
 	const { palette } = useTheme();
 	const { show } = useWarningPopup();
+	const { confirm } = useConfirmModal();
 
-	function handleConfirmDelete() {
+	function handleSwipeDelete() {
 		const permission = getPermission(list.id);
 		if (permission !== "owner") {
 			show("You don't have permission to delete this list.");
 			return;
 		}
-		onDelete();
+		confirm(`Delete "${list.name}"?`, onDelete);
 	}
 
 	return (
 		<View style={styles.outer}>
-			<SwipeToDelete onConfirmDelete={handleConfirmDelete}>
+			<SwipeToDelete onConfirmDelete={handleSwipeDelete}>
 				<FloatingCard onPress={onPress} style={styles.card}>
 					<Text style={[styles.name, { color: palette.text }]}>{list.name}</Text>
 					<Pressable onPress={onShare} hitSlop={8}>

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { Entry } from "../types/todo";
 import { FloatingCard } from "./FloatingCard";
 import { SwipeToDelete } from "./SwipeToDelete";
+import { useConfirmModal } from "./ConfirmModal";
 import { useTheme } from "../theme/ThemeContext";
 import { CheckboxIcon } from "./icons";
 
@@ -15,6 +16,7 @@ type Props = {
 
 export function EntryRow({ entry, onToggle, onDelete, onEdit }: Props) {
 	const { palette } = useTheme();
+	const { confirm } = useConfirmModal();
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(entry.text);
 
@@ -31,7 +33,7 @@ export function EntryRow({ entry, onToggle, onDelete, onEdit }: Props) {
 
 	return (
 		<View style={styles.outer}>
-			<SwipeToDelete onConfirmDelete={onDelete}>
+			<SwipeToDelete onConfirmDelete={() => confirm(`Delete "${entry.text}"?`, onDelete)}>
 				<FloatingCard style={styles.card}>
 					<Pressable onPress={onToggle} hitSlop={8}>
 						<CheckboxIcon size={26} color={palette.stormyTeal} checked={entry.completed} />
