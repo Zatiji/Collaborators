@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { List } from "../types/todo";
-import { getPermission } from "../mock/sharing";
+import { useAuth } from "../contexts/AuthContext";
 import { FloatingCard } from "./FloatingCard";
 import { SwipeToDelete } from "./SwipeToDelete";
 import { useWarningPopup } from "./WarningPopup";
@@ -17,12 +17,12 @@ type Props = {
 
 export function ListRow({ list, onPress, onShare, onDelete }: Props) {
 	const { palette } = useTheme();
+	const { session } = useAuth();
 	const { show } = useWarningPopup();
 	const { confirm } = useConfirmModal();
 
 	function handleSwipeDelete() {
-		const permission = getPermission(list.id);
-		if (permission !== "owner") {
+		if (list.ownerId !== session?.user.id) {
 			show("You don't have permission to delete this list.");
 			return;
 		}

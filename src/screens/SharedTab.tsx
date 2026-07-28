@@ -20,7 +20,7 @@ export function SharedTab() {
 				contentContainerStyle={styles.listContent}
 				renderItem={({ item }) => (
 					<ListRow
-						list={{ id: item.id, name: item.name, createdAt: item.updatedAt, updatedAt: item.updatedAt }}
+						list={{ id: item.id, name: item.name, ownerId: "", createdAt: item.updatedAt, updatedAt: item.updatedAt }}
 						onPress={() => {}}
 						onShare={() => {
 							if (getPermission(item.id) === "read") {

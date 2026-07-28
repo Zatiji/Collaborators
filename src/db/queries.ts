@@ -1,5 +1,6 @@
 import { getDb } from "./schema";
-import type { List, Entry } from "../types/todo";
+import { supabase } from "../lib/supabase";
+import type { List } from "../types/todo";
 
 function generateId(): string {
 	const cryptoObj = globalThis.crypto as Crypto | undefined;
@@ -12,29 +13,16 @@ function generateId(): string {
 type ListRow = {
 	id: string;
 	name: string;
-	created_at: number;
-	updated_at: number;
-};
-
-type EntryRow = {
-	id: string;
-	list_id: string;
-	text: string;
-	completed: number;
+	owner_id: string;
 	created_at: number;
 	updated_at: number;
 };
 
 function rowToList(row: ListRow): List {
-	return { id: row.id, name: row.name, createdAt: row.created_at, updatedAt: row.updated_at };
-}
-
-function rowToEntry(row: EntryRow): Entry {
 	return {
 		id: row.id,
-		listId: row.list_id,
-		text: row.text,
-		completed: row.completed === 1,
+		name: row.name,
+		ownerId: row.owner_id,
 		createdAt: row.created_at,
 		updatedAt: row.updated_at,
 	};
@@ -42,98 +30,42 @@ function rowToEntry(row: EntryRow): Entry {
 
 export async function getLists(): Promise<List[]> {
 	const db = await getDb();
-	const rows = await db.getAllAsync<ListRow>(
-		"SELECT * FROM lists ORDER BY updated_at DESC;",
-	);
-
+	const rows = await db.getAllAsync<ListRow>("SELECT * FROM lists ORDER BY updated_at DESC;");
 	return rows.map(rowToList);
 }
 
 export async function getList(id: string): Promise<List | null> {
 	const db = await getDb();
-	const row = await db.getFirstAsync<ListRow>(
-		"SELECT * FROM lists WHERE id = ?;",
-		id,
-	);
-
+	const row = await db.getFirstAsync<ListRow>("SELECT * FROM lists WHERE id = ?;", id);
 	return row ? rowToList(row) : null;
 }
 
-export async function createList(name: string): Promise<List> {
+export async function createList(name: string, ownerId: string): Promise<List> {
 	const db = await getDb();
 	const id = generateId();
 	const now = Date.now();
 	await db.runAsync(
-		"INSERT INTO lists (id, name, created_at, updated_at) VALUES (?, ?, ?, ?);",
+		"INSERT INTO lists (id, name, owner_id, created_at, updated_at, pending) VALUES (?, ?, ?, ?, ?, 1);",
 		id,
 		name,
+		ownerId,
 		now,
 		now,
 	);
 
-	return { id, name, createdAt: now, updatedAt: now };
+	const { error } = await supabase.from("lists").insert({ id, name, owner_id: ownerId });
+	if (!error) {
+		await db.runAsync("UPDATE lists SET pending = 0 WHERE id = ?;", id);
+	}
+	// on failure, the row stays locally with pending = 1; a full retry queue
+	// for list creation is out of scope for this phase (entries are the
+	// offline-critical path — lists are rarely created while offline).
+
+	return { id, name, ownerId, createdAt: now, updatedAt: now };
 }
 
 export async function deleteList(id: string): Promise<void> {
 	const db = await getDb();
 	await db.runAsync("DELETE FROM lists WHERE id = ?;", id);
-}
-
-export async function getEntries(listId: string): Promise<Entry[]> {
-	const db = await getDb();
-
-	const rows = await db.getAllAsync<EntryRow>(
-		"SELECT * FROM entries WHERE list_id = ? ORDER BY created_at ASC;",
-		listId,
-	);
-
-	return rows.map(rowToEntry);
-}
-
-export async function createEntry(
-	listId: string,
-	text: string,
-): Promise<Entry> {
-	const db = await getDb();
-	const id = generateId();
-	const now = Date.now();
-
-	await db.runAsync(
-		"INSERT INTO entries (id, list_id, text, completed, created_at, updated_at) VALUES (?, ?, ?, 0, ?, ?);",
-		id,
-		listId,
-		text,
-		now,
-		now,
-	);
-
-	return { id, listId, text, completed: false, createdAt: now, updatedAt: now };
-}
-
-export async function updateEntryText(id: string, text: string): Promise<void> {
-	const db = await getDb();
-	await db.runAsync(
-		"UPDATE entries SET text = ?, updated_at = ? WHERE id = ?;",
-		text,
-		Date.now(),
-		id,
-	);
-}
-
-export async function toggleEntryComplete(
-	id: string,
-	completed: boolean,
-): Promise<void> {
-	const db = await getDb();
-	await db.runAsync(
-		"UPDATE entries SET completed = ?, updated_at = ? WHERE id = ?;",
-		completed ? 1 : 0,
-		Date.now(),
-		id,
-	);
-}
-
-export async function deleteEntry(id: string): Promise<void> {
-	const db = await getDb();
-	await db.runAsync("DELETE FROM entries WHERE id = ?;", id);
+	await supabase.from("lists").delete().eq("id", id);
 }
