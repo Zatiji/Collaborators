@@ -5,9 +5,11 @@ import {
 	createList as createListQuery,
 	deleteList as deleteListQuery,
 } from "../db/queries";
+import { useAuth } from "../contexts/AuthContext";
 import type { List } from "../types/todo";
 
 export function useLists() {
+	const { session } = useAuth();
 	const [lists, setLists] = useState<List[]>([]);
 
 	const refresh = useCallback(async () => {
@@ -22,10 +24,11 @@ export function useLists() {
 
 	const createList = useCallback(
 		async (name: string) => {
-			await createListQuery(name);
+			if (!session?.user.id) return;
+			await createListQuery(name, session.user.id);
 			await refresh();
 		},
-		[refresh],
+		[refresh, session?.user.id],
 	);
 
 	const deleteList = useCallback(
