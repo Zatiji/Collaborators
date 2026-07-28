@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../src/contexts/AuthContext";
 import { ThemeProvider } from "../src/theme/ThemeContext";
 import { WarningPopupProvider } from "../src/components/WarningPopup";
 import { ConfirmModalProvider } from "../src/components/ConfirmModal";
+import { startForegroundFlush } from "../src/sync/foregroundFlush";
 
 function RootNavigator() {
 	const { session, isLoading } = useAuth();
@@ -26,6 +28,8 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+	useEffect(() => startForegroundFlush(), []);
+
 	return (
 		<GestureHandlerRootView style={{ flex: 1 }}>
 			<ThemeProvider>

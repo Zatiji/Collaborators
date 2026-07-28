@@ -12,7 +12,14 @@ export function SettingsRow({ label, onPress, right }: Props) {
 	const { palette } = useTheme();
 
 	return (
-		<Pressable onPress={onPress} style={[styles.row, { borderBottomColor: palette.line }]}>
+		<Pressable
+			onPress={onPress}
+			style={({ pressed }) => [
+				styles.row,
+				{ borderBottomColor: palette.line },
+				pressed && styles.pressed,
+			]}
+		>
 			<Text style={[styles.label, { color: palette.text }]}>{label}</Text>
 			<View>{right}</View>
 		</Pressable>
@@ -29,4 +36,5 @@ const styles = StyleSheet.create({
 		borderBottomWidth: 1,
 	},
 	label: { fontSize: 16, fontFamily: "Arial" },
+	pressed: { opacity: 0.5 },
 });
